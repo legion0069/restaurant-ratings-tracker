@@ -6,6 +6,9 @@ on:
     - cron: '30 3 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
+permissions:
+  contents: write
+
 jobs:
   track-and-mail:
     runs-on: ubuntu-latest
@@ -30,8 +33,7 @@ jobs:
           SMTP_PORT: ${{ secrets.SMTP_PORT || '587' }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT || 'vsaiteja@gmail.com' }}
-          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          EMAIL_RECIPIENT: ${{ secrets.EMAIL_RECIPIENT || 'vsaiteja@isthara.com' }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: |
           python main.py --run-now
