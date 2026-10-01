@@ -1,5 +1,6 @@
 import smtplib
 import ssl
+import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
@@ -162,16 +163,19 @@ def generate_html_table(rows_data):
 
 def send_ratings_email(rows_data, excel_path, recipient=None):
     """
-    Sends the HTML summary email with the Excel attachment.
+    Sends the HTML summary email with the Excel attachment to one or multiple recipients.
     """
-    to_email = recipient or EMAIL_RECIPIENT
+    recipient_str = recipient or EMAIL_RECIPIENT
+    recipient_list = [e.strip() for e in re.split(r"[,;]+", recipient_str) if e.strip()]
+    to_header = ", ".join(recipient_list)
+
     today_label = rows_data[-1][0] if rows_data else "Today"
     subject = f"Daily Ratings Report - Kiplings & Casa Loco Express ({today_label})"
 
     # Check if SMTP credentials are provided
     if not SMTP_USER or not SMTP_PASSWORD:
         print("\n[Email Warning] SMTP_USER or SMTP_PASSWORD is not configured in .env!")
-        print(f"[Email Preview] Would send email to: {to_email}")
+        print(f"[Email Preview] Would send email to: {to_header}")
         print(f"[Email Preview] Subject: {subject}")
         print(f"[Email Preview] Attachment: {excel_path}")
         print("To enable live email sending, add your Gmail App Password to the .env file.")
@@ -179,7 +183,7 @@ def send_ratings_email(rows_data, excel_path, recipient=None):
 
     msg = MIMEMultipart()
     msg['From'] = f"Restaurant Tracker <{SMTP_USER}>"
-    msg['To'] = to_email
+    msg['To'] = to_header
     msg['Subject'] = subject
 
     # Attach HTML body
@@ -212,9 +216,9 @@ def send_ratings_email(rows_data, excel_path, recipient=None):
                 server.starttls()
             
             server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+            server.send_message(msg, to_addrs=recipient_list)
             server.quit()
-            print(f"[Email SUCCESS] Successfully sent daily ratings email to {to_email}!")
+            print(f"[Email SUCCESS] Successfully sent daily ratings email to {to_header}!")
             return True
         except Exception as e:
             print(f"[Email Warning] Attempt on port {port} ({'SSL' if use_ssl else 'STARTTLS'}) failed: {e}")
