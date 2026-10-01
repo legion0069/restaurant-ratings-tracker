@@ -44,8 +44,8 @@ RESTAURANTS_CONFIG = {
         "swiggy_id": 1431945,
         "lat": 17.4338,
         "lng": 78.3855,
-        "google_query": "Kipling's Déli & Bistro Inorbit Mall Hyderabad",
-        "google_place_id": None
+        "google_query": "Kiplings Deli & Bistro Hyderabad",
+        "google_place_id": "ChIJSUG0WACRyzsRuUFml9cpIFQ"
     },
     "casa_loco": {
         "name": "Casa Loco Express",
@@ -57,6 +57,6 @@ RESTAURANTS_CONFIG = {
         "lat": 17.4400802,
         "lng": 78.3809632,
         "google_query": "Casa Loco Express Mindspace Hyderabad",
-        "google_place_id": None
+        "google_place_id": "ChIJX0fzg0STyzsRpHG-gcZKTlk"
     }
 }

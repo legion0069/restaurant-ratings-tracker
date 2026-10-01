@@ -154,14 +154,19 @@ def get_google_ratings(place_name, place_id=None):
     # 1. SerpAPI (Google Maps Reviews / Place API)
     if serpapi_key:
         try:
-            print(f"[SerpAPI] Fetching live Google Maps ratings for '{place_name}'...")
+            target_desc = place_id if place_id else place_name
+            print(f"[SerpAPI] Fetching live Google Maps ratings for '{place_name}' (ID: {place_id})...")
             params = {
                 "engine": "google_maps",
-                "q": place_name,
                 "hl": "en",
                 "gl": "in",
                 "api_key": serpapi_key
             }
+            if place_id:
+                params["place_id"] = place_id
+            else:
+                params["q"] = place_name
+
             r = requests.get("https://serpapi.com/search.json", params=params, timeout=15)
             if r.status_code == 200:
                 data = r.json()
@@ -169,7 +174,13 @@ def get_google_ratings(place_name, place_id=None):
                 # Check place_results or local_results
                 pr = data.get("place_results")
                 if not pr and "local_results" in data and len(data["local_results"]) > 0:
-                    pr = data["local_results"][0]
+                    target_kw = "kipling" if "kipling" in place_name.lower() else ("casa" if "casa" in place_name.lower() else "")
+                    for item in data["local_results"]:
+                        if target_kw and target_kw in item.get("title", "").lower():
+                            pr = item
+                            break
+                    if not pr:
+                        pr = data["local_results"][0]
 
                 if pr:
                     raw_rating = pr.get("rating")
