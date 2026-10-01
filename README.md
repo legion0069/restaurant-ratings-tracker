@@ -106,38 +106,36 @@ python main.py --schedule
 
 ---
 
-## ⏰ Automated Daily Scheduling (3 Production Options)
+## ⏰ Automated Daily Scheduling (09:00 AM IST)
 
-### Option A: Deploy to Vercel (Cloud Serverless Cron)
+### 🌟 Option A: GitHub Actions (100% Free Cloud Automation — Recommended)
 
-The project includes pre-configured [`vercel.json`](file:///vercel.json) and [`api/cron.py`](file:///api/cron.py) to run automatically at **09:00 AM IST (03:30 UTC)** every day.
+The repository includes a ready-to-run GitHub Actions workflow ([`.github/workflows/daily_ratings.yml`](file:///.github/workflows/daily_ratings.yml)) that runs automatically every morning at **09:00 AM IST (03:30 UTC)**.
 
-**Steps to Deploy on Vercel:**
-1. Push this project to your GitHub repository.
-2. Go to [vercel.com](https://vercel.com) and click **"Add New" > "Project"**.
-3. Import your GitHub repository.
-4. Under **Environment Variables**, add:
-   - `SMTP_HOST`: `smtp.gmail.com`
-   - `SMTP_PORT`: `587`
+**What it does every morning:**
+1. Spins up a cloud runner and installs Python dependencies.
+2. Scrapes live ratings from **Google Maps (SerpAPI)**, **Zomato**, and **Swiggy**.
+3. Updates and styles [`data/restaurant_ratings.xlsx`](file:///data/restaurant_ratings.xlsx) and commits it back to your GitHub repo.
+4. Sends the daily HTML report with the attached Excel file to **`vsaiteja@isthara.com`**.
+
+**GitHub Setup:**
+1. In your GitHub repository, go to **Settings ➔ Secrets and variables ➔ Actions**.
+2. Add these repository secrets:
    - `SMTP_USER`: `tejaverukonda@gmail.com`
-   - `SMTP_PASSWORD`: `your_gmail_app_password`
+   - `SMTP_PASSWORD`: `btmupxjftvrotabb`
    - `EMAIL_RECIPIENT`: `vsaiteja@isthara.com`
-   - `SERPAPI_KEY`: `your_serpapi_key`
-5. Click **Deploy**.
-6. Vercel will automatically configure the **Cron Job** defined in `vercel.json` to trigger `/api/cron` every morning at **09:00 AM IST**.
-
-> 💡 **Manual Trigger URL:** You can test the deployment anytime by visiting `https://your-project.vercel.app/api/cron` in your browser.
+   - `SERPAPI_KEY`: `6ad40cf887798c107fa84025951df57bf3e919b278cc68be6996196bf85986cb`
+3. Everything is now 100% automated! You can also trigger a manual run anytime from the **Actions** tab by clicking **"Run workflow"**.
 
 ---
 
-### Option B: GitHub Actions (100% Free Cloud Automation)
+### 💻 Option B: Windows Task Scheduler (Local PC)
 
-If hosted on a GitHub repository, the included workflow ([`.github/workflows/daily_ratings.yml`](file:///.github/workflows/daily_ratings.yml)) executes automatically every morning at **09:00 AM IST (03:30 UTC)**, commits the updated Excel file, and dispatches the email report.
-
-**Setup in GitHub:**
-1. Navigate to **Settings > Secrets and variables > Actions** in your repository.
-2. Add repository secrets: `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_RECIPIENT`, `SERPAPI_KEY`.
-3. The workflow will automatically run daily at 9:00 AM IST.
+If you prefer running locally on your computer:
+```powershell
+.\setup_windows_task.ps1
+```
+> Registers a native Windows background task named `RestaurantRatingsDailyMailer` that runs `python main.py --run-now` every morning at **09:00 AM IST**, even when no terminal window is open.
 
 ---
 
