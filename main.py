@@ -84,5 +84,25 @@ def main():
         print("\nTip: Run with `python main.py --schedule` to keep the scheduler running daily at 9:00 AM.")
 
 
+from http.server import BaseHTTPRequestHandler
+import json
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        try:
+            execute_daily_job(dry_run=False)
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "success", "message": "Daily ratings job executed"}).encode('utf-8'))
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "error", "error": str(e)}).encode('utf-8'))
+
+app = handler
+
+
 if __name__ == "__main__":
     main()
