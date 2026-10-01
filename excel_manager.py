@@ -16,6 +16,35 @@ HISTORICAL_SEED_DATA = [
     ["22 Sept", 124, 4.5, 192, 4.4, 28, 5.0, 68, 4.3, 46, 3.8],
 ]
 
+def normalize_date_label(date_val):
+    """
+    Normalizes any datetime object or date string into uniform '1 Oct', '23 Sept' format.
+    """
+    if date_val is None:
+        return format_today_label()
+    
+    if isinstance(date_val, datetime):
+        day = str(date_val.day)
+        month = "Sept" if date_val.strftime("%b") == "Sep" else date_val.strftime("%b")
+        return f"{day} {month}"
+    
+    val_str = str(date_val).strip()
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"):
+        try:
+            dt = datetime.strptime(val_str.split(".")[0], fmt)
+            day = str(dt.day)
+            month = "Sept" if dt.strftime("%b") == "Sep" else dt.strftime("%b")
+            return f"{day} {month}"
+        except Exception:
+            pass
+            
+    # Normalize existing strings like "16 Sep" to "16 Sept"
+    if " Sep" in val_str and " Sept" not in val_str:
+        val_str = val_str.replace(" Sep", " Sept")
+
+    return val_str
+
+
 def load_or_create_rows():
     """
     Loads existing data rows from Excel if file exists, or returns historical seed.
@@ -35,7 +64,8 @@ def load_or_create_rows():
             date_val = ws.cell(row=r, column=1).value
             if not date_val:
                 continue
-            row_vals = [str(date_val)]
+            normalized_date = normalize_date_label(date_val)
+            row_vals = [normalized_date]
             for c in range(2, 12):
                 val = ws.cell(row=r, column=c).value
                 row_vals.append(val)
@@ -48,11 +78,11 @@ def load_or_create_rows():
 
 def format_today_label(dt=None):
     """
-    Formats date like '24 Sept', '15 Oct', etc.
+    Formats date like '24 Sept', '1 Oct', etc.
     """
     if dt is None:
         dt = datetime.now()
-    day = dt.strftime("%d").lstrip("0")
+    day = str(dt.day)
     month = dt.strftime("%b")
     return f"{day} {month}"
 
