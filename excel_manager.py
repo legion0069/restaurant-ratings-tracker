@@ -1,10 +1,10 @@
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from config import EXCEL_FILE_PATH, BASE_DIR
 
-# Historical seed data from user's image
+# Historical seed data from user's table
 HISTORICAL_SEED_DATA = [
     ["15 Sept", 116, 4.4, 153, 4.3, 28, 5.0, 63, 4.3, 46, 3.8],
     ["16 Sept", 121, 4.4, 158, 4.4, 28, 5.0, 63, 4.3, 46, 3.8],
@@ -14,14 +14,51 @@ HISTORICAL_SEED_DATA = [
     ["20 Sept", 121, 4.4, 178, 4.4, 28, 5.0, 67, 4.3, 46, 3.8],
     ["21 Sept", 123, 4.4, 187, 4.4, 28, 5.0, 67, 4.3, 46, 3.8],
     ["22 Sept", 124, 4.5, 192, 4.4, 28, 5.0, 68, 4.3, 46, 3.8],
+    ["23 Sept", 125, 4.5, 194, 4.3, 28, 5.0, 68, 4.3, 46, 3.8],
+    ["24 Sept", 124, 4.5, 198, 4.3, 28, 5.0, 70, 4.3, 46, 3.8],
+    ["25 Sept", 129, 4.5, 200, 4.4, 28, 5.0, 71, 4.2, 47, 3.8],
+    ["27 Sept", 142, 4.5, 217, 4.4, 28, 5.0, 73, 4.3, 47, 3.8],
+    ["28 Sept", 143, 4.5, 222, 4.4, 28, 5.0, 73, 4.3, 48, 3.7],
+    ["29 Sept", 143, 4.5, 225, 4.4, 28, 5.0, 73, 4.3, 50, 3.7],
+    ["30 Sept", 143, 4.5, 229, 4.4, 28, 5.0, 73, 4.3, 52, 3.7],
+    ["1 Oct", 143, 4.5, 231, 4.4, 28, 5.0, 74, 4.2, 52, 3.7],
 ]
+
+def format_date_label(dt=None):
+    """
+    Formats a datetime object or date into uniform '1 Oct', '23 Sept' format.
+    """
+    if dt is None:
+        dt = datetime.now()
+    day = str(dt.day)
+    month = "Sept" if dt.strftime("%b") == "Sep" else dt.strftime("%b")
+    return f"{day} {month}"
+
+
+def get_yesterday_date_label(reference_dt=None):
+    """
+    Returns yesterday's date label (e.g. '1 Oct' when called on Oct 2nd).
+    Since the 9:00 AM daily report records the prior day's performance,
+    the date recorded in the Excel tracker is yesterday's date.
+    """
+    ref = reference_dt if reference_dt is not None else datetime.now()
+    yesterday = ref - timedelta(days=1)
+    return format_date_label(yesterday)
+
+
+def format_today_label(dt=None):
+    """
+    Backwards-compatible helper. Formats given date or today's date.
+    """
+    return format_date_label(dt)
+
 
 def normalize_date_label(date_val):
     """
     Normalizes any datetime object or date string into uniform '1 Oct', '23 Sept' format.
     """
     if date_val is None:
-        return format_today_label()
+        return get_yesterday_date_label()
     
     if isinstance(date_val, datetime):
         day = str(date_val.day)
@@ -76,22 +113,12 @@ def load_or_create_rows():
         return list(HISTORICAL_SEED_DATA)
 
 
-def format_today_label(dt=None):
+def update_excel_with_ratings(ratings_dict, custom_date_str=None):
     """
-    Formats date like '24 Sept', '1 Oct', etc.
+    Appends or updates the tracking row in the Excel sheet and saves formatted workbook.
+    By default, uses yesterday's date (e.g. 1 Oct when run on 2 Oct morning).
     """
-    if dt is None:
-        dt = datetime.now()
-    day = str(dt.day)
-    month = dt.strftime("%b")
-    return f"{day} {month}"
-
-
-def update_excel_with_today_ratings(ratings_dict, custom_date_str=None):
-    """
-    Appends or updates today's row in the Excel sheet and saves formatted workbook.
-    """
-    date_str = custom_date_str if custom_date_str else format_today_label()
+    date_str = custom_date_str if custom_date_str else get_yesterday_date_label()
     
     k = ratings_dict.get("kiplings", {})
     c = ratings_dict.get("casa_loco", {})
@@ -126,6 +153,10 @@ def update_excel_with_today_ratings(ratings_dict, custom_date_str=None):
     # Save styled Excel
     save_styled_excel(rows)
     return rows, EXCEL_FILE_PATH
+
+
+# Alias for backward compatibility
+update_excel_with_today_ratings = update_excel_with_ratings
 
 
 def save_styled_excel(rows_data):

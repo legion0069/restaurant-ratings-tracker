@@ -116,11 +116,11 @@ def generate_html_table(rows_data):
         <div class="card">
             <div class="header">
                 <h1>Daily Restaurant Ratings Report</h1>
-                <p>Kipling's Déli &amp; Bistro &bull; Casa Loco Express | {last_row[0]}</p>
+                <p>Kipling's Déli &amp; Bistro &bull; Casa Loco Express | Data for {last_row[0]}</p>
             </div>
             <div class="body-content">
                 <p style="font-size: 13px; color: #475569; margin: 0 0 14px 0;">
-                    Hello! Here is your automated daily ratings summary. The updated Excel spreadsheet is attached.
+                    Hello! Here is your automated daily ratings summary for <strong>{last_row[0]}</strong>. The updated Excel spreadsheet is attached.
                 </p>
                 <div class="table-container">
                     <table>

@@ -87,9 +87,13 @@ SERPAPI_KEY=
 ## 🏃 Running the Automation
 
 ### 1. Immediate Run (Fetch + Update Excel + Send Email)
-Executes the full pipeline immediately:
+Executes the full pipeline immediately for yesterday's tracking record (or optionally provide a `--date`):
 ```bash
+# Uses yesterday's date by default (e.g. 1 Oct if run on 2 Oct)
 python main.py --run-now
+
+# Or specify a custom target date
+python main.py --run-now --date "1 Oct"
 ```
 
 ### 2. Dry Run (Fetch + Update Excel Only)
@@ -99,7 +103,7 @@ python main.py --dry-run
 ```
 
 ### 3. Continuous Scheduler
-Runs an active scheduling loop in your terminal that triggers every day at `SCHEDULE_TIME` (default: 09:00 AM):
+Runs an active scheduling loop in your terminal that triggers every day at `SCHEDULE_TIME` (default: 09:00 AM) and records the prior day's performance:
 ```bash
 python main.py --schedule
 ```

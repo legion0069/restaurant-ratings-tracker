@@ -4,24 +4,26 @@ import time
 import schedule
 from datetime import datetime
 from scraper import fetch_all_ratings
-from excel_manager import update_excel_with_today_ratings, format_today_label
+from excel_manager import update_excel_with_ratings, get_yesterday_date_label
 from email_notifier import send_ratings_email
 from config import SCHEDULE_TIME, EMAIL_RECIPIENT
 
-def execute_daily_job(dry_run=False):
+def execute_daily_job(dry_run=False, target_date=None):
     """
-    Main job that fetches ratings, updates the Excel file, and dispatches the email.
+    Main job that fetches ratings, updates the Excel file with yesterday's tracking date,
+    and dispatches the email report.
     """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"\n[{timestamp}] Starting Daily Ratings Job...")
+    report_date = target_date if target_date else get_yesterday_date_label()
+    print(f"\n[{timestamp}] Starting Daily Ratings Job (Tracking Date: {report_date})...")
 
     try:
         # Step 1: Scrape ratings
         ratings = fetch_all_ratings()
 
-        # Step 2: Update Excel
-        rows_data, excel_path = update_excel_with_today_ratings(ratings)
-        print(f"[{timestamp}] Excel updated with today's record ({len(rows_data)} total days tracked).")
+        # Step 2: Update Excel for the specified date
+        rows_data, excel_path = update_excel_with_ratings(ratings, custom_date_str=report_date)
+        print(f"[{timestamp}] Excel updated with record for '{report_date}' ({len(rows_data)} total days tracked).")
 
         # Step 3: Dispatch Email
         if dry_run:
@@ -29,7 +31,7 @@ def execute_daily_job(dry_run=False):
         else:
             success = send_ratings_email(rows_data, excel_path)
             if success:
-                print(f"[{timestamp}] Daily report email successfully sent to {EMAIL_RECIPIENT}!")
+                print(f"[{timestamp}] Daily report email for {report_date} successfully sent to {EMAIL_RECIPIENT}!")
             else:
                 print(f"[{timestamp}] Email not dispatched (see configuration notes above).")
 
@@ -68,19 +70,20 @@ def main():
     parser.add_argument("--run-now", action="store_true", help="Run the automation job once immediately")
     parser.add_argument("--schedule", action="store_true", help="Start the daily background scheduler (default 9:00 AM)")
     parser.add_argument("--dry-run", action="store_true", help="Fetch ratings and update Excel without sending email")
+    parser.add_argument("--date", type=str, default=None, help="Target tracking date for record (e.g. '1 Oct', defaults to yesterday)")
     
     args = parser.parse_args()
 
     if args.dry_run:
-        execute_daily_job(dry_run=True)
+        execute_daily_job(dry_run=True, target_date=args.date)
     elif args.run_now:
-        execute_daily_job(dry_run=False)
+        execute_daily_job(dry_run=False, target_date=args.date)
     elif args.schedule:
         run_scheduler()
     else:
         # Default behavior if no args provided: run once now and show instructions
-        print("No flag provided. Running immediate update...\n")
-        execute_daily_job(dry_run=False)
+        print("No flag provided. Running immediate update for yesterday's tracking record...\n")
+        execute_daily_job(dry_run=False, target_date=args.date)
         print("\nTip: Run with `python main.py --schedule` to keep the scheduler running daily at 9:00 AM.")
 
 
