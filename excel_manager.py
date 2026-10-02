@@ -161,7 +161,8 @@ update_excel_with_today_ratings = update_excel_with_ratings
 
 def save_styled_excel(rows_data):
     """
-    Generates a beautifully formatted Excel file matching the exact image structure.
+    Generates a beautifully formatted Excel file matching the exact image structure,
+    typography (Arial/Segoe UI), borders, column widths, and row heights.
     """
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -170,44 +171,50 @@ def save_styled_excel(rows_data):
     # Show grid lines
     ws.views.sheetView[0].showGridLines = True
 
-    # Styling fonts & borders
-    font_header_title = Font(name="Segoe UI", size=11, bold=True, color="000000")
-    font_sub_header = Font(name="Segoe UI", size=10, bold=True, color="000000")
-    font_regular = Font(name="Segoe UI", size=10, color="000000")
+    # Typography & Styling tokens matching reference image
+    font_header_main = Font(name="Arial", size=11, bold=True, color="000000")
+    font_header_platform = Font(name="Arial", size=11, bold=True, color="000000")
+    font_header_metric = Font(name="Arial", size=10, bold=True, color="000000")
+    font_regular = Font(name="Arial", size=10, bold=False, color="000000")
     
-    fill_header = PatternFill(start_color="F8F9FA", end_color="F8F9FA", fill_type="solid")
+    fill_white = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+    
     thin_border_side = Side(border_style="thin", color="D3D3D3")
-    border_cell = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=thin_border_side)
+    medium_divider_side = Side(border_style="medium", color="7F7F7F")
+    
+    border_header_standard = Border(
+        left=thin_border_side,
+        right=thin_border_side,
+        top=thin_border_side,
+        bottom=thin_border_side
+    )
+    border_header_bottom = Border(
+        left=thin_border_side,
+        right=thin_border_side,
+        top=thin_border_side,
+        bottom=medium_divider_side
+    )
+    border_data_cell = Border(
+        left=thin_border_side,
+        right=thin_border_side,
+        top=thin_border_side,
+        bottom=thin_border_side
+    )
+    
     align_center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    align_data = Alignment(horizontal="center", vertical="center")
 
-    # 1. Header Structure
-    # Top Row (Row 1): Date, Kiplings, Casa Loco Express
-    ws.merge_cells("A1:A3")
+    # 1. Header Values & Merges
     ws["A1"] = "Date"
-    
-    ws.merge_cells("B1:E1")
     ws["B1"] = "Kiplings"
-    
-    ws.merge_cells("F1:K1")
     ws["F1"] = "Casa Loco Express"
 
-    # Platform Row (Row 2)
-    ws.merge_cells("B2:C2")
     ws["B2"] = "Google"
-    
-    ws.merge_cells("D2:E2")
     ws["D2"] = "Zomato"
-    
-    ws.merge_cells("F2:G2")
     ws["F2"] = "Google"
-    
-    ws.merge_cells("H2:I2")
     ws["H2"] = "Zomato - Delivery"
-    
-    ws.merge_cells("J2:K2")
     ws["J2"] = "Swiggy - Delivery"
 
-    # Metric Row (Row 3)
     headers_row_3 = [
         "", # Date
         "Total no", "Rating", # Kiplings Google
@@ -219,38 +226,92 @@ def save_styled_excel(rows_data):
     for col_idx in range(2, 12):
         ws.cell(row=3, column=col_idx, value=headers_row_3[col_idx-1])
 
-    # Apply Header Styles to Rows 1-3
+    # Merge cell ranges
+    merge_list = [
+        "A1:A3",
+        "B1:E1",
+        "F1:K1",
+        "B2:C2",
+        "D2:E2",
+        "F2:G2",
+        "H2:I2",
+        "J2:K2",
+    ]
+    for m in merge_list:
+        ws.merge_cells(m)
+
+    # Row heights
+    ws.row_dimensions[1].height = 26
+    ws.row_dimensions[2].height = 24
+    ws.row_dimensions[3].height = 22
+
+    # Apply formatting to all header cells
     for r in range(1, 4):
-        ws.row_dimensions[r].height = 24
         for c in range(1, 12):
             cell = ws.cell(row=r, column=c)
-            cell.font = font_header_title if r < 3 else font_sub_header
             cell.alignment = align_center
-            cell.border = border_cell
-            cell.fill = fill_header
+            cell.fill = fill_white
+            
+            if r == 1:
+                cell.font = font_header_main
+            elif r == 2:
+                cell.font = font_header_platform
+            else:
+                cell.font = font_header_metric
+            
+            if r == 3:
+                cell.border = border_header_bottom
+            else:
+                cell.border = border_header_standard
+
+    # Ensure Date merged cells have proper bounding borders
+    ws["A1"].border = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=medium_divider_side)
+    ws["A2"].border = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=thin_border_side)
+    ws["A3"].border = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=medium_divider_side)
 
     # 2. Write Data Rows
     current_row = 4
     for row in rows_data:
         ws.row_dimensions[current_row].height = 20
         for col_idx, val in enumerate(row, start=1):
-            cell = ws.cell(row=current_row, column=col_idx, value=val)
+            cell = ws.cell(row=current_row, column=col_idx)
             cell.font = font_regular
-            cell.border = border_cell
-            cell.alignment = align_center
+            cell.border = border_data_cell
+            cell.fill = fill_white
+            cell.alignment = align_data
             
-            # Format numbers
-            if col_idx in [3, 5, 7, 9, 11] and isinstance(val, (int, float)): # Rating columns
-                cell.number_format = "0.0"
-            elif col_idx in [2, 4, 6, 8, 10] and isinstance(val, int): # Count columns
-                cell.number_format = "#,##0"
+            # Format numbers & values
+            if col_idx == 1:
+                cell.value = str(val) if val is not None else ""
+            elif col_idx in [3, 5, 7, 9, 11]:  # Rating columns (e.g. 4.4, 5.0, 3.8)
+                try:
+                    if val is not None and str(val).strip() != "":
+                        cell.value = float(val)
+                        cell.number_format = "0.0"
+                    else:
+                        cell.value = ""
+                except (ValueError, TypeError):
+                    cell.value = val
+            elif col_idx in [2, 4, 6, 8, 10]:  # Count columns (e.g. 116, 28, 63)
+                try:
+                    if val is not None and str(val).strip() != "":
+                        cell.value = int(val)
+                        cell.number_format = "#,##0"
+                    else:
+                        cell.value = ""
+                except (ValueError, TypeError):
+                    cell.value = val
+            else:
+                cell.value = val
                 
         current_row += 1
 
-    # 3. Adjust Column Widths
-    ws.column_dimensions['A'].width = 14
-    for col_letter in ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K']:
-        ws.column_dimensions[col_letter].width = 13
+    # 3. Adjust Column Widths to match exact proportions
+    ws.column_dimensions['A'].width = 13.5
+    for col_letter in ['B', 'D', 'F', 'H', 'J']:
+        ws.column_dimensions[col_letter].width = 11.5
+    for col_letter in ['C', 'E', 'G', 'I', 'K']:
+        ws.column_dimensions[col_letter].width = 10.5
 
     # Save to file
     EXCEL_FILE_PATH.parent.mkdir(exist_ok=True, parents=True)
