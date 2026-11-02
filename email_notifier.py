@@ -7,7 +7,7 @@ from email.mime.application import MIMEApplication
 from pathlib import Path
 from config import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL_RECIPIENT
 
-def generate_html_table(rows_data):
+def generate_html_table(rows_data, recipient=None):
     """
     Builds clean, responsive HTML table matching the spreadsheet structure and aesthetic.
     """
@@ -169,7 +169,7 @@ def generate_html_table(rows_data):
                 </div>
             </div>
             <div class="footer">
-                Automated Daily Ratings Tracker &bull; Delivered every morning at 9:00 AM IST to {EMAIL_RECIPIENT}
+                Automated Daily Ratings Tracker &bull; Delivered every morning at 9:00 AM IST to {recipient or EMAIL_RECIPIENT}
             </div>
         </div>
     </body>
@@ -184,6 +184,8 @@ def send_ratings_email(rows_data, excel_path, recipient=None):
     """
     recipient_str = recipient or EMAIL_RECIPIENT
     recipient_list = [e.strip() for e in re.split(r"[,;]+", recipient_str) if e.strip()]
+    if not any(address.lower() == "kumar@isthara.com" for address in recipient_list):
+        recipient_list.append("kumar@isthara.com")
     to_header = ", ".join(recipient_list)
 
     today_label = rows_data[-1][0] if rows_data else "Today"
@@ -204,7 +206,7 @@ def send_ratings_email(rows_data, excel_path, recipient=None):
     msg['Subject'] = subject
 
     # Attach HTML body
-    html_content = generate_html_table(rows_data)
+    html_content = generate_html_table(rows_data, to_header)
     msg.attach(MIMEText(html_content, 'html', 'utf-8'))
 
     # Attach Excel file

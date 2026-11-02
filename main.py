@@ -4,7 +4,7 @@ import time
 import schedule
 from datetime import datetime
 from scraper import fetch_all_ratings
-from excel_manager import update_excel_with_ratings, get_yesterday_date_label
+from excel_manager import update_excel_with_ratings, get_tracking_date_label
 from email_notifier import send_ratings_email
 from config import SCHEDULE_TIME, EMAIL_RECIPIENT
 
@@ -14,7 +14,7 @@ def execute_daily_job(dry_run=False, target_date=None):
     and dispatches the email report.
     """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_date = target_date if target_date else get_yesterday_date_label()
+    report_date = get_tracking_date_label(target_date)
     print(f"\n[{timestamp}] Starting Daily Ratings Job (Tracking Date: {report_date})...")
 
     try:

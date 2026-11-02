@@ -67,6 +67,31 @@ def normalize_date_label(date_val):
     return val_str
 
 
+def _month_number_from_date_label(date_val):
+    parts = normalize_date_label(date_val).split()
+    if len(parts) < 2:
+        return None
+    month = "Sep" if parts[-1] == "Sept" else parts[-1]
+    try:
+        return datetime.strptime(month, "%b").month
+    except ValueError:
+        return None
+
+
+def get_tracking_date_label(custom_date_str=None, reference_dt=None):
+    reference = reference_dt if reference_dt is not None else datetime.now()
+    is_month_start = reference.day == 1
+    date_str = custom_date_str if custom_date_str else (
+        format_date_label(reference) if is_month_start else get_yesterday_date_label(reference)
+    )
+
+    if is_month_start:
+        previous_month = (reference.replace(day=1) - timedelta(days=1)).month
+        if _month_number_from_date_label(date_str) == previous_month:
+            return format_date_label(reference)
+    return date_str
+
+
 def load_or_create_rows():
     """
     Loads existing data rows from Excel if file exists, or returns historical seed.
@@ -103,7 +128,9 @@ def update_excel_with_ratings(ratings_dict, custom_date_str=None):
     Appends or updates the tracking row in the Excel sheet and saves formatted workbook.
     By default, uses yesterday's date (e.g. 1 Oct when run on 2 Oct morning).
     """
-    date_str = custom_date_str if custom_date_str else get_yesterday_date_label()
+    today = datetime.now()
+    is_month_start = today.day == 1
+    date_str = get_tracking_date_label(custom_date_str, today)
     
     k = ratings_dict.get("kiplings", {})
     c = ratings_dict.get("casa_loco", {})
@@ -123,6 +150,10 @@ def update_excel_with_ratings(ratings_dict, custom_date_str=None):
     ]
 
     rows = load_or_create_rows()
+
+    if is_month_start:
+        previous_month = (today.replace(day=1) - timedelta(days=1)).month
+        rows = [row for row in rows if _month_number_from_date_label(row[0]) != previous_month]
     
     # Check if date_str is already in rows
     updated = False
