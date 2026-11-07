@@ -127,7 +127,7 @@ The repository includes a ready-to-run GitHub Actions workflow ([`.github/workfl
 2. Add these repository secrets:
   - `SMTP_USER`: Your sender email address
   - `SMTP_PASSWORD`: Your Gmail App Password
-  - `EMAIL_RECIPIENT`: `vsaiteja@isthara.com,kumar@isthara.com`
+  - `EMAIL_RECIPIENT`: `vsaiteja@isthara.com`
   - `SERPAPI_KEY`: Your SerpAPI key
 3. Everything is now 100% automated! You can also trigger a manual run anytime from the **Actions** tab by clicking **"Run workflow"**.
 
@@ -184,7 +184,7 @@ restaurant-ratings-tracker/
 | `SMTP_PORT` | `587` | SMTP port (`587` for STARTTLS, `465` for SSL) |
 | `SMTP_USER` | - | Sender email address |
 | `SMTP_PASSWORD` | - | 16-character Gmail App Password |
-| `EMAIL_RECIPIENT` | `vsaiteja@gmail.com,kumar@isthara.com` | Comma- or semicolon-separated recipients for daily reports |
+| `EMAIL_RECIPIENT` | `vsaiteja@isthara.com` | Comma- or semicolon-separated recipients for daily reports |
 | `SCHEDULE_TIME` | `09:00` | Local time (24h `HH:MM`) for scheduled daily run |
 | `SERPAPI_KEY` | _(required for Google live sync)_ | SerpAPI key for live Google Maps ratings & reviews scraping |
 | `GOOGLE_PLACES_API_KEY` | _(optional alternative)_ | Google Places API key if using Google Cloud directly |

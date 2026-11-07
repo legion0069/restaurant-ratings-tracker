@@ -184,8 +184,6 @@ def send_ratings_email(rows_data, excel_path, recipient=None):
     """
     recipient_str = recipient or EMAIL_RECIPIENT
     recipient_list = [e.strip() for e in re.split(r"[,;]+", recipient_str) if e.strip()]
-    if not any(address.lower() == "kumar@isthara.com" for address in recipient_list):
-        recipient_list.append("kumar@isthara.com")
     to_header = ", ".join(recipient_list)
 
     today_label = rows_data[-1][0] if rows_data else "Today"
